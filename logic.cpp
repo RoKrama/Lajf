@@ -3,10 +3,10 @@
 
 Logic::Logic(int xsize, int ysize):
     x(xsize), y(ysize),
-    micro(), sigma(0.22),
+    micro(0.58), sigma(0.065),
     pi(3.1416), e(2.718),
     throw_micro(micro),
-    layers {0.8, 0.41, 0.25, 1.35}
+    layers {0.45, 0.75, 0.23, 1.6}
 {
     deviation = 1.f/255.f;
 
@@ -25,15 +25,8 @@ Logic::Logic(int xsize, int ysize):
         og_array[i][j] = layers[ij];
     og_array[4][4] = 0;
 
-//    for(int i = 0; i < 9; i++) for(int j = 0; j < 9; j++) og_array[i][j] = layers[3];
-//    for(int i = 1; i < 8; i++) for(int j = 1; j < 8; j++) og_array[i][j] = layers[0];
-//    for(int i = 2; i < 7; i++) for(int j = 2; j < 7; j++) og_array[i][j] = layers[1];
-//    for(int i = 3; i < 6; i++) for(int j = 3; j < 6; j++) og_array[i][j] = layers[2];
-
-
-qDebug()<< range;
+    qDebug()<< range;
     init();
-
 }
 void Logic::init()
 {
@@ -42,10 +35,12 @@ void Logic::init()
     std::uniform_int_distribution<>distrib(0, 255);
 
     for (int i = 0; i < (x+8); i++) for(int j = 0; j < (y+8); j++)
-        cell_array[i][j] = Cell(distrib(rng));
+        cell_array[i][j] = Cell(0);
 
-    for (int i = 50; i < 158; i++) for(int j = 50; j < 158; j++)
+    for (int i = 350; i < 400; i++) for(int j = 350; j < 400; j++)
         cell_array[i][j].opacity = 200;
+//    for (int i = 200; i < 250; i++) for(int j = 250; j < 258; j++)
+//        cell_array[i][j].opacity = 200;
 }
 void Logic::compute_frame()
 {
@@ -70,10 +65,7 @@ void Logic::compute_frame()
     std::thread t_b(&Logic::ccb, this);
     std::thread t_o(&Logic::cco, this);
 
-    t_r.join();
-    t_g.join();
-    t_b.join();
-    t_o.join();
+    t_r.join(); t_g.join(); t_b.join(); t_o.join();
 
     for(int i = 4; i < (x+4); i++) for(int j = 4; j < (y+4); j++)
         cell_array[i][j] = cell_array_buffer[i][j];
@@ -85,7 +77,6 @@ float Logic::compute_opacity(const int &arr_i,const int &arr_j)
 
     cell_array_buffer[arr_i][arr_j].opacity *= 0.0125;
     set_to_normal(cell_array_buffer[arr_i][arr_j].opacity);
-    (cell_array_buffer[arr_i][arr_j].opacity += cell_array[arr_i][arr_j].opacity) /= 2;
 
     return cell_array_buffer[arr_i][arr_j].opacity;
 }
@@ -106,7 +97,6 @@ float Logic::compute_red(const int &arr_i,const int &arr_j)
 //    }
     cell_array_buffer[arr_i][arr_j].red *= 0.125;
     set_to_normal(cell_array_buffer[arr_i][arr_j].red);
-    (cell_array_buffer[arr_i][arr_j].red += cell_array[arr_i][arr_j].red) /= 2;
 
     return cell_array_buffer[arr_i][arr_j].red;
 }
@@ -125,7 +115,6 @@ float Logic::compute_green(const int &arr_i,const int &arr_j)
 
     cell_array_buffer[arr_i][arr_j].green *= 0.0625;
     set_to_normal(cell_array_buffer[arr_i][arr_j].green);
-    (cell_array_buffer[arr_i][arr_j].green += cell_array[arr_i][arr_j].green) /= 2;
 
     return cell_array_buffer[arr_i][arr_j].green;
 }
@@ -144,7 +133,6 @@ float Logic::compute_blue(const int &arr_i,const int &arr_j)
 
     cell_array_buffer[arr_i][arr_j].blue *= 0.0417;
     set_to_normal(cell_array_buffer[arr_i][arr_j].blue);
-    (cell_array_buffer[arr_i][arr_j].blue += cell_array[arr_i][arr_j].blue) /= 2;
 
     return cell_array_buffer[arr_i][arr_j].blue;
 }
@@ -153,7 +141,7 @@ void Logic::set_to_normal(float &normal)
 {
     normal *= deviation;
     gauss(normal);
-    if(normal < 0) { normal = 0; return; }
+    //if(normal < 0) { normal = 0; return; }
     normal /= deviation;
     if(normal > 255) normal = 255;
 
@@ -167,13 +155,12 @@ void Logic::gauss(float &to_gauss)
     to_gauss =
         (
             (
-            .5*(std::pow(e,((-(std::pow((to_gauss-micro),2)))
+            (std::pow(e,((-(std::pow((to_gauss-micro),2)))
                             /(2*sigma*sigma))))
             +
-            (std::pow(e,((-(std::pow((to_gauss-(micro+ .5f)),2)))
+            (std::pow(e,((-(std::pow((to_gauss-(micro- .63f)),2)))
                             /(2*sigma*sigma))))
             )
-            *0.5
         );
     }
 Logic::~Logic()

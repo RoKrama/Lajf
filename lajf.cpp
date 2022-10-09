@@ -7,20 +7,20 @@
 
 Lajf::Lajf(QWidget *parent): QMainWindow(parent),
       color(QColor()),
-      pixframe(50),
+      pixframe(350),
       painter(new QPainter()),
       timer(QTimer(this)),
-      xlength(360),ylength(350),
+      xlength(760),ylength(750),
       driver(Logic(xlength, ylength)),
       frame_count(0)
 {
     pixmap = new QPixmap[pixframe],
     pixmap[0] = QPixmap(xlength,ylength);
-    pixmap[0].fill(Qt::magenta);
+    pixmap[0].fill(Qt::white);
     connect(&timer, &QTimer::timeout, this, &Lajf::paint);
     save_pixmap();
     showMaximized();
-    timer.start(25);
+    timer.start(40);
 }
 void Lajf::save_pixmap()
 {
@@ -50,7 +50,7 @@ void Lajf::save_pixmap()
         loader = pixmap[frame];
 
         auto time_end = t_now;
-        qDebug()<<"time: "<<ms(time_end-time_start).count()<<"  frame: "<<frame;
+        qDebug()<<"time: "<<ms(time_end-time_start).count()<<"  frame: "<<(frame+1);
     }
 }
 void Lajf::paint()
